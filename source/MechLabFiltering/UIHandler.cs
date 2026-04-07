@@ -58,6 +58,7 @@ internal class UIHandler
         _tabRadioSet = go.transform.parent.GetComponent<HBSRadioSet>();
         _tabRadioSet.ClearRadioButtons();
 
+        int maxButtons = 0;
         foreach (var tabInfo in _settings.Tabs)
         {
             Log.Main.Trace?.Log($"--- create tab [{tabInfo.Caption}]");
@@ -77,6 +78,7 @@ internal class UIHandler
             if (text != null)
                 text.SetText(tabInfo.Caption);
             _tabRadioSet.RadioButtons.Add(radio);
+            maxButtons = Math.Max(maxButtons, tabInfo.Buttons.Length);
         }
 
         Log.Main.Trace?.Log("-- create small buttons");
@@ -89,7 +91,7 @@ internal class UIHandler
         ShowChildren(go, "");
 
         _widget.filterRadioSet.ClearRadioButtons();
-        for (var i = 0; i < 14; i++)
+        for (var i = 0; i < maxButtons; i++)
         {
             Log.Main.Trace?.Log($"--- Create Button #{i}");
             try
@@ -183,7 +185,7 @@ internal class UIHandler
         if (tabInfo.Buttons.Length == 0)
             return;
 
-        for (var i = 0; i < 14 && i < tabInfo.Buttons.Length; i++)
+        for (var i = 0; i < tabInfo.Buttons.Length; i++)
         {
             Log.Main.Trace?.Log($"- button {i}");
 
@@ -246,6 +248,19 @@ internal class UIHandler
 
             customButtonInfo.Go.SetActive(!buttonInfo.Debug || _settings.ShowDebugButtons);
         }
+
+        GridLayoutGroup gridLayoutGroup = _buttons[0].Go.transform.parent.gameObject.GetComponent<GridLayoutGroup>();
+        int activeButtons = _settings.ShowDebugButtons ? tabInfo.Buttons.Length : tabInfo.Buttons.Count(b => !b.Debug);
+        if (activeButtons > 12)
+        {
+            float spacing = (484f - 32 * activeButtons) / (activeButtons - 1);
+            gridLayoutGroup.spacing = new Vector2(spacing, spacing);
+        }
+        else
+        {
+            gridLayoutGroup.spacing = new Vector2(8, 8);
+        }
+
         _widget.filterRadioSet.Reset();
         FilterPressed(0);
     }
